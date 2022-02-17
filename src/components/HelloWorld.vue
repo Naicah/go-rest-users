@@ -1,42 +1,103 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+
+    <div v-for="(user, i) in users" :key="i + 'user'">
+      <p>{{ user.id }}: {{ user.name }}</p>
+    </div>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'HelloWorld',
+  name: "HelloWorld",
   props: {
-    msg: String
-  }
-}
+    msg: String,
+  },
+  data() {
+    return {
+      APIUrl: "https://gorest.co.in/public/v2/users/",
+      bearerToken:
+        "Bearer 89907c468eb0aaa16db84b8c185e4b33f44e7a08c64b374829d684518cec39b2",
+      users: [],
+    };
+  },
+
+  created() {
+    // this.createUser();
+    // this.createUser({
+    //   name: "Mimmi Melander",
+    //   email: "ander@gmail.com",
+    //   gender: "Female",
+    //   status: "active",
+    // }).then((data) => {
+    //   console.log(data);
+    // });
+    this.getAllUsers();
+    this.updateUser("4897", {
+      name: "Mimmi",
+    });
+    this.deleteUser("3884");
+    // this.getUser("3894");
+  },
+
+  methods: {
+    async getAllUsers() {
+      const response = await fetch(this.APIUrl, {
+        headers: {
+          Authorization: this.bearerToken,
+        },
+      });
+      this.users = await response.json();
+    },
+
+    async getUser(id) {
+      const response = await fetch(`${this.APIUrl}${id}`, {
+        headers: {
+          Authorization: this.bearerToken,
+        },
+      });
+      console.log(await response.json());
+      return await response.json();
+    },
+
+    async createUser(data) {
+      const response = await fetch(this.APIUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: this.bearerToken,
+        },
+        body: JSON.stringify(data),
+      });
+      console.log(await response.json());
+    },
+
+    async updateUser(id, data) {
+      const response = await fetch(`${this.APIUrl}${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: this.bearerToken,
+        },
+        body: JSON.stringify(data),
+      });
+      console.log(await response.json());
+      this.getAllUsers();
+    },
+
+    async deleteUser(id) {
+      const response = await fetch(`${this.APIUrl}${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: this.bearerToken,
+        },
+      });
+      console.log(response.status);
+      this.getAllUsers();
+    },
+  },
+};
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

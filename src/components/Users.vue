@@ -1,5 +1,5 @@
 <template>
-  <div class="hello">
+  <div class="container">
     <h1>{{ msg }}</h1>
 
     <div class="users">
@@ -8,6 +8,7 @@
         :class="{ inactive: user.status === 'inactive' }"
         v-for="(user, i) in users"
         :key="i + 'user'"
+        @click="showModal(user)"
       >
         <h3>{{ user.name }}</h3>
         <p>{{ user.email }}</p>
@@ -19,15 +20,20 @@
 
 <script>
 export default {
-  name: "HelloWorld",
+  name: "Users",
   props: {
     msg: String,
+    APIUrl: {
+      type: String,
+      required: true,
+    },
+    bearerToken: {
+      type: String,
+      required: true,
+    },
   },
   data() {
     return {
-      APIUrl: "https://gorest.co.in/public/v2/users/",
-      bearerToken:
-        "Bearer 89907c468eb0aaa16db84b8c185e4b33f44e7a08c64b374829d684518cec39b2",
       users: [],
     };
   },
@@ -47,7 +53,6 @@ export default {
     //   name: "Mimmi",
     // });
     // this.deleteUser("3884");
-    // this.getUser("3894");
   },
 
   methods: {
@@ -58,16 +63,6 @@ export default {
         },
       });
       this.users = await response.json();
-    },
-
-    async getUser(id) {
-      const response = await fetch(`${this.APIUrl}${id}`, {
-        headers: {
-          Authorization: this.bearerToken,
-        },
-      });
-      console.log(await response.json());
-      return await response.json();
     },
 
     async createUser(data) {
@@ -105,33 +100,26 @@ export default {
       console.log(response.status);
       this.getAllUsers();
     },
+
+    showModal(user) {
+      console.log("emit showUser");
+      console.log("user:", user);
+      this.$emit("showUser", user);
+    },
   },
 };
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="scss" scoped>
 h3 {
-  /* border-bottom: solid; */
   font-size: 1.3rem;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-a {
-  color: #42b983;
 }
 
 * {
   box-sizing: border-box;
 }
 
-.hello {
+.container {
   display: flex;
   justify-content: space-around;
   flex-direction: column;
@@ -144,7 +132,6 @@ a {
   justify-content: space-around;
   width: 80vw;
 }
-
 .user {
   display: flex;
   justify-content: space-around;
@@ -164,16 +151,16 @@ a {
     5px 4px 7px 2px rgba(0, 0, 0, 0.4);
   box-shadow: 5px 4px 7px 2px rgba(0, 0, 0, 0.4),
     5px 4px 7px 2px rgba(0, 0, 0, 0.4);
-}
 
-.user:hover {
-  cursor: pointer;
-  transform: scale(1.05);
-  background: #81b8a1;
-}
+  &:hover {
+    cursor: pointer;
+    transform: scale(1.05);
+    background: #81b8a1;
+  }
 
-.inactive {
-  opacity: 50%;
+  &.inactive {
+    opacity: 50%;
+  }
 }
 
 /* Small devices (portrait tablets and large phones, 600px and up) */

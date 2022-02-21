@@ -1,19 +1,55 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <Users
+      msg="Go REST Users"
+      :APIUrl="APIUrl"
+      :bearerToken="bearerToken"
+      @showUser="showUser"
+    />
+    <transition name="fade" mode="out-in">
+      <Modal
+        class="modal"
+        v-show="showModal"
+        @modalCancel="hideModal"
+        :userID="userID"
+        :APIUrl="APIUrl"
+        :bearerToken="bearerToken"
+      />
+    </transition>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import Users from "./components/Users.vue";
+import Modal from "./components/Modal.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
-    HelloWorld
-  }
-}
+    Users,
+    Modal,
+  },
+  data() {
+    return {
+      APIUrl: "https://gorest.co.in/public/v2/users/",
+      bearerToken:
+        "Bearer 89907c468eb0aaa16db84b8c185e4b33f44e7a08c64b374829d684518cec39b2",
+      showModal: false,
+      userID: 0,
+    };
+  },
+  methods: {
+    showUser(e) {
+      console.log("showUser called");
+      console.log("e:", e);
+      this.showModal = true;
+      this.userID = e.id;
+    },
+    hideModal() {
+      this.showModal = false;
+    },
+  },
+};
 </script>
 
 <style>
@@ -24,5 +60,16 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1050;
+  display: none;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  outline: 0;
 }
 </style>

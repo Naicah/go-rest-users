@@ -1,5 +1,14 @@
 # Go REST users
 
+Basic Vue app featuring use of API https://gorest.co.in/
+
+Features:
+- Get a list of 20 latest users
+- Get user details (by user ID)
+- Create a new user
+- Update user details
+- Delete user
+
 ## Project setup
 
 ```

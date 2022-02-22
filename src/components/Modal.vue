@@ -1,31 +1,59 @@
 <template>
   <div class="modal">
-    <div class="box card">
-      <p>{{ user.id }}</p>
-      <p>{{ user.name }}</p>
-      <p>{{ user.email }}</p>
-      <p>{{ user.gender }}</p>
-      <p>{{ user.status }}</p>
+    <div class="box">
+      <div class="inputs">
+        <Input
+          :data="user.name"
+          :label="'Name'"
+          :placeholder="'Name'"
+          @updateValue="name = $event"
+        />
+        <Input
+          :data="user.email"
+          :label="'Email'"
+          :placeholder="'Email'"
+          @updateValue="email = $event"
+        />
+        <Input
+          :data="user.gender"
+          :label="'Gender'"
+          :placeholder="'Gender'"
+          @updateValue="gender = $event"
+        />
+        <Input
+          :data="user.status"
+          :label="'Status'"
+          :placeholder="'Status'"
+          @updateValue="status = $event"
+        />
+      </div>
+      <p v-show="this.showError">Woops! Something went wrong</p>
       <div class="buttons">
         <button
+          v-if="this.name || this.email || this.gender || this.status"
           type="button"
-          class="btn btn-rounded btn-secondary"
-          @click="modalCancel"
+          class="save"
+          @click="getUpdateData"
         >
-          Close
+          Save changes
         </button>
+        <button type="button" @click="modalClose">Cancel</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-export default {
-  name: "modal",
+import Input from "./Input.vue";
 
+export default {
+  name: "Modal",
+  components: {
+    Input,
+  },
   props: {
-    userID: {
-      type: Number,
+    user: {
+      type: Object,
       required: true,
     },
     APIUrl: {
@@ -39,14 +67,14 @@ export default {
   },
   data() {
     return {
-      user: {},
+      name: "",
+      email: "",
+      gender: "",
+      status: "",
+      showError: false,
     };
   },
   methods: {
-    modalCancel() {
-      this.$emit("modalCancel");
-      this.user = {};
-    },
     async getUser(id) {
       const response = await fetch(`${this.APIUrl}${id}`, {
         headers: {
@@ -54,6 +82,43 @@ export default {
         },
       });
       this.user = await response.json();
+    },
+
+    getUpdateData() {
+      let data = {};
+      if (this.name) data.name = this.name;
+      if (this.email) data.email = this.email;
+      if (this.gender) data.gender = this.gender;
+      if (this.status) data.status = this.status;
+      this.updateUser(this.user.id, data);
+    },
+
+    async updateUser(id, data) {
+      const response = await fetch(`${this.APIUrl}${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: this.bearerToken,
+        },
+        body: JSON.stringify(data),
+      });
+      console.log(response);
+      if (response.status == 200) {
+        console.log("done");
+        this.showError = false;
+        this.modalClose();
+      } else {
+        this.showError = true;
+      }
+    },
+
+    modalClose() {
+      this.$emit("modalClose");
+      this.name = "";
+      this.email = "";
+      this.gender = "";
+      this.status = "";
+      this.showError = false;
     },
   },
   watch: {
@@ -75,9 +140,9 @@ export default {
 
   .box {
     margin: 45vh auto;
-    width: 60%;
+    width: 90vw;
     height: auto;
-    padding: 2rem 4rem;
+    padding: 1.5rem 2rem;
     background-color: white;
     transform: translateY(-50%);
     box-shadow: 5px 10px 18px #888888;
@@ -91,6 +156,12 @@ export default {
       padding: 1rem 0;
     }
 
+    .inputs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+
     .buttons {
       display: flex;
       justify-content: flex-end;
@@ -98,19 +169,37 @@ export default {
       button {
         margin: 1rem;
         margin-bottom: 0;
+        padding: 6px 20px;
+        border-radius: calc(1.5em + 0.75rem + 2px);
+        background-color: #9c9d99;
+        border: none;
+        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+          border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
+          -webkit-box-shadow 0.15s ease-in-out;
+        color: white;
+        font-weight: 500;
+        letter-spacing: 0.3px;
+        font-size: 1rem;
+        line-height: 1.5;
+        &:hover {
+          background-color: #8a8a8a;
+          cursor: pointer;
+        }
+        &.save {
+          background-color: #4dcb96;
+          &:hover {
+            background-color: #61f7b8;
+          }
+        }
       }
     }
   }
 
-  @media only screen and (max-width: 600px) {
-    .box {
-      margin: 45vh auto;
-      width: 95%;
-      padding: 1.5rem 2rem;
-
-      .buttons button {
-        margin: 1.5rem 0.2rem 0.5rem 0.2rem;
-      }
+  /* Large devices (laptops/desktops, 992px and up) */
+  @media only screen and (min-width: 992px) {
+    .modal .box {
+      width: 60vw;
+      padding: 2rem 4rem;
     }
   }
 }

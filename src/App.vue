@@ -2,6 +2,7 @@
   <div id="app">
     <Users
       msg="Go REST Users"
+      :users="users"
       :APIUrl="APIUrl"
       :bearerToken="bearerToken"
       @showUser="showUser"
@@ -10,8 +11,8 @@
       <Modal
         class="modal"
         v-show="showModal"
-        @modalCancel="hideModal"
-        :userID="userID"
+        @modalClose="hideModal"
+        :user="chosenUser"
         :APIUrl="APIUrl"
         :bearerToken="bearerToken"
       />
@@ -35,17 +36,30 @@ export default {
       bearerToken:
         "Bearer 89907c468eb0aaa16db84b8c185e4b33f44e7a08c64b374829d684518cec39b2",
       showModal: false,
-      userID: 0,
+      users: [],
+      chosenUser: {},
     };
   },
+  created() {
+    this.getAllUsers();
+  },
   methods: {
+    async getAllUsers() {
+      const response = await fetch(this.APIUrl, {
+        headers: {
+          Authorization: this.bearerToken,
+        },
+      });
+      this.users = await response.json();
+    },
     showUser(e) {
       console.log("showUser called");
       console.log("e:", e);
       this.showModal = true;
-      this.userID = e.id;
+      this.chosenUser = e;
     },
     hideModal() {
+      this.getAllUsers();
       this.showModal = false;
     },
   },
@@ -53,11 +67,14 @@ export default {
 </script>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
   margin-top: 60px;
 }

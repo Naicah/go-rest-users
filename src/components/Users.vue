@@ -23,6 +23,9 @@ export default {
   name: "Users",
   props: {
     msg: String,
+    users: {
+      type: Array,
+    },
     APIUrl: {
       type: String,
       required: true,
@@ -33,9 +36,7 @@ export default {
     },
   },
   data() {
-    return {
-      users: [],
-    };
+    return {};
   },
 
   created() {
@@ -48,7 +49,6 @@ export default {
     // }).then((data) => {
     //   console.log(data);
     // });
-    this.getAllUsers();
     // this.updateUser("4897", {
     //   name: "Mimmi",
     // });
@@ -56,15 +56,6 @@ export default {
   },
 
   methods: {
-    async getAllUsers() {
-      const response = await fetch(this.APIUrl, {
-        headers: {
-          Authorization: this.bearerToken,
-        },
-      });
-      this.users = await response.json();
-    },
-
     async createUser(data) {
       const response = await fetch(this.APIUrl, {
         method: "POST",
@@ -75,19 +66,6 @@ export default {
         body: JSON.stringify(data),
       });
       console.log(await response.json());
-    },
-
-    async updateUser(id, data) {
-      const response = await fetch(`${this.APIUrl}${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: this.bearerToken,
-        },
-        body: JSON.stringify(data),
-      });
-      console.log(await response.json());
-      this.getAllUsers();
     },
 
     async deleteUser(id) {
@@ -113,10 +91,6 @@ export default {
 <style lang="scss" scoped>
 h3 {
   font-size: 1.3rem;
-}
-
-* {
-  box-sizing: border-box;
 }
 
 .container {

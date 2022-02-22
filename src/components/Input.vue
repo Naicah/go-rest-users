@@ -10,12 +10,14 @@ export default {
   name: "Input",
 
   props: {
+    iteration: {
+      type: Number,
+    },
     data: {
       type: String,
     },
     label: {
       type: String,
-      required: true,
     },
     placeholder: {
       type: String,
@@ -28,12 +30,11 @@ export default {
   },
   methods: {},
   watch: {
-    data() {
+    iteration() {
       this.inputData = this.data;
     },
     inputData() {
       if (this.inputData !== this.data) {
-        console.log("input changed");
         this.$emit("updateValue", this.inputData);
       }
     },

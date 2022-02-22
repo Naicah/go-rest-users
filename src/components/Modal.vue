@@ -1,47 +1,68 @@
 <template>
   <div class="modal">
     <div class="box">
-      <h2>User {{ user.id }}</h2>
+      <h2>
+        <span v-if="type == 'create'"> Create user </span>
+        <span v-else-if="type == 'find'"> Find user </span>
+        <span v-else> User {{ user.id }}</span>
+      </h2>
+
       <div class="inputs">
         <Input
+          :iteration="iteration"
           :data="user.name"
           :label="'Name'"
           :placeholder="'Name'"
           @updateValue="name = $event"
         />
         <Input
+          :iteration="iteration"
           :data="user.email"
           :label="'Email'"
           :placeholder="'Email'"
           @updateValue="email = $event"
         />
-        <Input
+        <Radio
+          :iteration="iteration"
           :data="user.gender"
           :label="'Gender'"
-          :placeholder="'Gender'"
+          :options="['Female', 'Male']"
           @updateValue="gender = $event"
         />
-        <Input
+        <Toggle
+          :iteration="iteration"
           :data="user.status"
           :label="'Status'"
-          :placeholder="'Status'"
+          :labelActive="'Active'"
+          :labelInactive="'Inactive'"
           @updateValue="status = $event"
         />
       </div>
-      <p v-show="this.showError">Woops! Something went wrong</p>
+
+      <p v-show="createError">{{ createError }}</p>
+      <p v-show="showError">Woops! Something went wrong</p>
+
       <div class="buttons">
+        <button v-if="!user.id" type="button" class="save" @click="getUserData">
+          Add user
+        </button>
         <button
-          v-if="this.name || this.email || this.gender || this.status"
+          v-if="user.id && (name || email || gender || status)"
           type="button"
           class="save"
           @click="getUpdateData"
         >
           Save changes
         </button>
-        <button type="button" class="delete" @click="deleteUser(user.id)">
+        <button
+          v-if="user.id"
+          type="button"
+          class="delete"
+          @click="deleteUser(user.id)"
+        >
           Delete user
         </button>
-        <button type="button" @click="modalClose">Cancel</button>
+        <button type="button" class="close" @click="modalClose">Cancel</button>
       </div>
     </div>
   </div>
@@ -49,15 +70,27 @@
 
 <script>
 import Input from "./Input.vue";
+import Radio from "./Radio.vue";
+import Toggle from "./Toggle.vue";
 
 export default {
   name: "Modal",
   components: {
     Input,
+    Radio,
+    Toggle,
   },
   props: {
+    iteration: {
+      type: Number,
+      required: true,
+    },
     user: {
       type: Object,
+      required: true,
+    },
+    type: {
+      type: String,
       required: true,
     },
     APIUrl: {
@@ -71,21 +104,44 @@ export default {
   },
   data() {
     return {
+      userID: "",
       name: "",
       email: "",
       gender: "",
       status: "",
       showError: false,
+      createError: "",
     };
   },
   methods: {
-    async getUser(id) {
-      const response = await fetch(`${this.APIUrl}${id}`, {
+    getUserData() {
+      if (this.name && this.email && this.gender) {
+        let data = {};
+        data.name = this.name;
+        data.email = this.email;
+        data.gender = this.gender;
+        data.status = this.status || "inactive";
+        this.createError = "false";
+        this.createUser(data);
+      } else {
+        this.createError = "Please fill in all fields";
+      }
+    },
+
+    async createUser(data) {
+      const response = await fetch(this.APIUrl, {
+        method: "POST",
         headers: {
+          "Content-Type": "application/json",
           Authorization: this.bearerToken,
         },
+        body: JSON.stringify(data),
       });
-      this.user = await response.json();
+      if (response.status == 201) {
+        this.modalClose();
+      } else if (response.status == 422) {
+        this.createError = "Invalid email";
+      }
     },
 
     getUpdateData() {
@@ -106,9 +162,7 @@ export default {
         },
         body: JSON.stringify(data),
       });
-      console.log(response);
       if (response.status == 200) {
-        console.log("done");
         this.showError = false;
         this.modalClose();
       } else {
@@ -123,9 +177,7 @@ export default {
           Authorization: this.bearerToken,
         },
       });
-      console.log(response.status);
       if (response.status == 204) {
-        console.log("done");
         this.showError = false;
         this.modalClose();
       } else {
@@ -140,9 +192,15 @@ export default {
       this.gender = "";
       this.status = "";
       this.showError = false;
+      this.createError = "";
     },
   },
   watch: {
+    iteration() {
+      if (this.type === "find") {
+        this.userID = this.user.id;
+      }
+    },
     userID() {
       this.getUser(this.userID);
     },
@@ -192,35 +250,14 @@ export default {
       flex-direction: column;
 
       button {
-        margin: 1rem;
-        margin-bottom: 0;
-        padding: 6px 20px;
-        border-radius: calc(1.5em + 0.75rem + 2px);
-        background-color: #9c9d99;
-        border: none;
-        transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
-          border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out,
-          -webkit-box-shadow 0.15s ease-in-out;
-        color: white;
-        font-weight: 500;
-        letter-spacing: 0.3px;
-        font-size: 1rem;
-        line-height: 1.5;
-        &:hover {
-          background-color: #8a8a8a;
-          cursor: pointer;
-        }
         &.save {
           background-color: #4dcb96;
-          &:hover {
-            background-color: #61f7b8;
-          }
         }
         &.delete {
           background-color: #cb4d4d;
-          &:hover {
-            background-color: #f76161;
-          }
+        }
+        &.close {
+          background-color: #9c9d99;
         }
       }
     }

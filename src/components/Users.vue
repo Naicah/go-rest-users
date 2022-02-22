@@ -1,6 +1,13 @@
 <template>
   <div class="container">
-    <h1>{{ msg }}</h1>
+    <div class="actions">
+      <div class="search">
+        <p>Find user</p>
+        <Input :placeholder="'User ID'" @updateValue="userID = $event" />
+      </div>
+      <button type="button" @click="getUser(userID)">Search</button>
+      <p v-show="findError">{{ findError }}</p>
+    </div>
 
     <div class="users">
       <div
@@ -8,21 +15,28 @@
         :class="{ inactive: user.status === 'inactive' }"
         v-for="(user, i) in users"
         :key="i + 'user'"
-        @click="showModal(user)"
+        @click="showModal('update', user)"
       >
         <h3>{{ user.name }}</h3>
         <p>{{ user.email }}</p>
         <p>{{ user.gender }}</p>
       </div>
     </div>
+    <div class="actions">
+      <button type="button" @click="showModal('create', {})">Add user</button>
+    </div>
   </div>
 </template>
 
 <script>
+import Input from "./Input.vue";
+
 export default {
   name: "Users",
+  components: {
+    Input,
+  },
   props: {
-    msg: String,
     users: {
       type: Array,
     },
@@ -36,42 +50,28 @@ export default {
     },
   },
   data() {
-    return {};
-  },
-
-  created() {
-    // this.createUser();
-    // this.createUser({
-    //   name: "Mimmi Melander",
-    //   email: "ander@gmail.com",
-    //   gender: "Female",
-    //   status: "active",
-    // }).then((data) => {
-    //   console.log(data);
-    // });
-    // this.updateUser("4897", {
-    //   name: "Mimmi",
-    // });
-    // this.deleteUser("3884");
+    return {
+      userID: 0,
+      findError: "",
+    };
   },
 
   methods: {
-    async createUser(data) {
-      const response = await fetch(this.APIUrl, {
-        method: "POST",
+    async getUser(id) {
+      const response = await fetch(`${this.APIUrl}${id}`, {
         headers: {
-          "Content-Type": "application/json",
           Authorization: this.bearerToken,
         },
-        body: JSON.stringify(data),
       });
-      console.log(await response.json());
+      if (response.status == 200) {
+        this.showModal("update", await response.json());
+        this.findError = "";
+      } else if (response.status == 404) {
+        this.findError = "Invalid user ID";
+      }
     },
-
-    showModal(user) {
-      console.log("emit showUser");
-      console.log("user:", user);
-      this.$emit("showUser", user);
+    showModal(type, user) {
+      this.$emit("showModal", type, user);
     },
   },
 };
@@ -80,9 +80,30 @@ export default {
 <style lang="scss" scoped>
 .container {
   display: flex;
-  justify-content: space-around;
-  flex-direction: column;
   align-items: center;
+  flex-direction: column;
+  .actions {
+    width: 80%;
+    padding: 2vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    .search {
+      width: 100%;
+      display: flex;
+      flex-direction: row;
+      div input {
+        margin-bottom: 0;
+      }
+    }
+    button {
+      width: 90%;
+    }
+    p {
+      width: 40%;
+      margin-left: 5vw;
+    }
+  }
 }
 
 .users {
@@ -103,22 +124,21 @@ export default {
 
   font-size: 0.9rem;
   word-break: break-word;
-  background: #c2efdc;
+  background: #2c8660;
+  color: white;
   border-radius: 1rem;
   transition: transform 0.2s;
-  -webkit-box-shadow: 5px 4px 7px 2px rgba(0, 0, 0, 0.4),
-    5px 4px 7px 2px rgba(0, 0, 0, 0.4);
-  box-shadow: 5px 4px 7px 2px rgba(0, 0, 0, 0.4),
-    5px 4px 7px 2px rgba(0, 0, 0, 0.4);
+  -webkit-box-shadow: 5px 4px 7px 2px #b9f1d9, 5px 4px 7px 2px #b9f1d9;
+  box-shadow: 5px 4px 7px 2px #b9f1d9, 5px 4px 7px 2px #b9f1d9;
 
   &:hover {
     cursor: pointer;
     transform: scale(1.05);
-    background: #81b8a1;
+    filter: brightness(1.2);
   }
 
   &.inactive {
-    opacity: 50%;
+    opacity: 65%;
   }
   h3 {
     font-size: 1.1rem;
@@ -132,6 +152,27 @@ export default {
 
 /* Small devices (portrait tablets and large phones, 600px and up) */
 @media only screen and (min-width: 600px) {
+  .container {
+    .actions {
+      flex-direction: row;
+      justify-content: space-around;
+      .search {
+        width: 40vw;
+        display: flex;
+        flex-direction: row;
+        div input {
+          margin-bottom: 0;
+        }
+        * {
+          width: 20vw;
+        }
+      }
+      button {
+        width: 20vw;
+        margin-top: 0;
+      }
+    }
+  }
   .user {
     width: 45%;
     margin: 2%;

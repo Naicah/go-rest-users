@@ -68,17 +68,6 @@ export default {
       console.log(await response.json());
     },
 
-    async deleteUser(id) {
-      const response = await fetch(`${this.APIUrl}${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: this.bearerToken,
-        },
-      });
-      console.log(response.status);
-      this.getAllUsers();
-    },
-
     showModal(user) {
       console.log("emit showUser");
       console.log("user:", user);
@@ -89,10 +78,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-h3 {
-  font-size: 1.3rem;
-}
-
 .container {
   display: flex;
   justify-content: space-around;
@@ -134,6 +119,14 @@ h3 {
 
   &.inactive {
     opacity: 50%;
+  }
+  h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0;
+  }
+
+  p {
+    margin-bottom: 0;
   }
 }
 

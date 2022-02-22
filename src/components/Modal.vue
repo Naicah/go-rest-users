@@ -1,6 +1,7 @@
 <template>
   <div class="modal">
     <div class="box">
+      <h2>User {{ user.id }}</h2>
       <div class="inputs">
         <Input
           :data="user.name"
@@ -36,6 +37,9 @@
           @click="getUpdateData"
         >
           Save changes
+        </button>
+        <button type="button" class="delete" @click="deleteUser(user.id)">
+          Delete user
         </button>
         <button type="button" @click="modalClose">Cancel</button>
       </div>
@@ -112,6 +116,23 @@ export default {
       }
     },
 
+    async deleteUser(id) {
+      const response = await fetch(`${this.APIUrl}${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: this.bearerToken,
+        },
+      });
+      console.log(response.status);
+      if (response.status == 204) {
+        console.log("done");
+        this.showError = false;
+        this.modalClose();
+      } else {
+        this.showError = true;
+      }
+    },
+
     modalClose() {
       this.$emit("modalClose");
       this.name = "";
@@ -147,6 +168,9 @@ export default {
     transform: translateY(-50%);
     box-shadow: 5px 10px 18px #888888;
 
+    h2 {
+      text-align: center;
+    }
     p {
       font-size: 1.2rem;
       padding-top: 1rem;
@@ -165,6 +189,7 @@ export default {
     .buttons {
       display: flex;
       justify-content: flex-end;
+      flex-direction: column;
 
       button {
         margin: 1rem;
@@ -191,16 +216,29 @@ export default {
             background-color: #61f7b8;
           }
         }
+        &.delete {
+          background-color: #cb4d4d;
+          &:hover {
+            background-color: #f76161;
+          }
+        }
       }
     }
   }
+}
 
-  /* Large devices (laptops/desktops, 992px and up) */
-  @media only screen and (min-width: 992px) {
-    .modal .box {
-      width: 60vw;
-      padding: 2rem 4rem;
-    }
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+  .modal .box .buttons {
+    flex-direction: row;
+  }
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  .modal .box {
+    width: 80vw;
+    padding: 2rem 4rem;
   }
 }
 </style>

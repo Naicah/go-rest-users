@@ -1,7 +1,7 @@
 <template>
   <div>
-    <span class="label">{{ this.label }}</span>
-    <input v-model="inputData" placeholder="this.placeholder" />
+    <span class="label">{{ label }}</span>
+    <input v-model="inputData" :placeholder="placeholder" />
   </div>
 </template>
 
